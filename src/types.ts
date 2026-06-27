@@ -23,6 +23,15 @@ export interface Contribution {
   createdAt: number;
 }
 
+export interface GuestConfirmation {
+  id: string;
+  guestName: string;
+  guestPhone: string;
+  companionCount: number;
+  companionNames?: string;
+  createdAt: number;
+}
+
 export interface AppSettings {
   birthdayGirl: string;
   birthdayDate: string;

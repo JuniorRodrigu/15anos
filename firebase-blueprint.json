@@ -49,6 +49,20 @@
         "createdAt": { "type": "number", "description": "Contribution timestamp" }
       },
       "required": ["id", "giftId", "guestName", "quotasCount", "totalValue", "status", "createdAt"]
+    },
+    "GuestConfirmation": {
+      "title": "GuestConfirmation",
+      "description": "A guest's attendance confirmation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the confirmation" },
+        "guestName": { "type": "string", "description": "Name of the guest" },
+        "guestPhone": { "type": "string", "description": "WhatsApp/phone of the guest" },
+        "companionCount": { "type": "number", "description": "Number of companions" },
+        "companionNames": { "type": "string", "description": "Names of companions if any" },
+        "createdAt": { "type": "number", "description": "Timestamp when confirmed" }
+      },
+      "required": ["id", "guestName", "companionCount", "createdAt"]
     }
   },
   "firestore": {
@@ -63,6 +77,10 @@
     "contributions/{contributionId}": {
       "schema": "Contribution",
       "description": "Contributions received from guests"
+    },
+    "confirmations/{confirmationId}": {
+      "schema": "GuestConfirmation",
+      "description": "Attendance confirmations from guests"
     }
   }
 }

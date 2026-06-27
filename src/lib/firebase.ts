@@ -12,7 +12,7 @@ import {
   query,
   orderBy
 } from 'firebase/firestore';
-import { Gift, Contribution, AppSettings } from '../types';
+import { Gift, Contribution, AppSettings, GuestConfirmation } from '../types';
 
 const firebaseConfig = {
   projectId: "gen-lang-client-0309471529",
@@ -37,7 +37,20 @@ export async function getAppSettings(): Promise<AppSettings> {
   const docSnap = await getDoc(docRef);
   
   if (docSnap.exists()) {
-    return docSnap.data() as AppSettings;
+    const data = docSnap.data() as AppSettings;
+    if (data.birthdayGirl === 'Lorena Silva' || data.birthdayGirl === 'Lorena') {
+      data.birthdayGirl = 'Lara Giovana';
+      data.pixName = 'Lara Giovana Silva';
+      try {
+        await updateDoc(docRef, {
+          birthdayGirl: 'Lara Giovana',
+          pixName: 'Lara Giovana Silva'
+        });
+      } catch (err) {
+        console.error("Error auto-updating settings in Firestore:", err);
+      }
+    }
+    return data;
   } else {
     // Return default settings
     const defaultSettings: AppSettings = {
@@ -74,7 +87,7 @@ export async function getGifts(): Promise<Gift[]> {
     const defaultGifts: Omit<Gift, 'id'>[] = [
       {
         name: 'Vestido da Valsa Principal',
-        description: 'Ajude a Lorena a brilhar na valsa de 15 anos com um lindo vestido digno de princesa!',
+        description: 'Ajude a Lara Giovana a brilhar na valsa de 15 anos com um lindo vestido digno de princesa!',
         quotaValue: 100,
         totalQuotas: 10,
         takenQuotas: 0,
@@ -247,4 +260,27 @@ export async function updateContributionStatus(
       takenQuotas: newTaken
     });
   }
+}
+
+export async function getConfirmations(): Promise<GuestConfirmation[]> {
+  const colRef = collection(db, 'confirmations');
+  const q = query(colRef, orderBy('createdAt', 'desc'));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => d.data() as GuestConfirmation);
+}
+
+export async function addConfirmation(confirmation: Omit<GuestConfirmation, 'id' | 'createdAt'>): Promise<GuestConfirmation> {
+  const docRef = doc(collection(db, 'confirmations'));
+  const newConfirmation: GuestConfirmation = {
+    ...confirmation,
+    id: docRef.id,
+    createdAt: Date.now()
+  };
+  await setDoc(docRef, newConfirmation);
+  return newConfirmation;
+}
+
+export async function deleteConfirmation(id: string): Promise<void> {
+  const docRef = doc(db, 'confirmations', id);
+  await deleteDoc(docRef);
 }

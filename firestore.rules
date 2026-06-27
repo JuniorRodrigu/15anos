@@ -17,6 +17,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
     
+    // Confirmations Collection: Publicly readable and writable so guests can confirm attendance and admin can view/manage
+    match /confirmations/{confirmationId} {
+      allow read, write: if true;
+    }
+    
     // Catch-all: Deny all other collections to prevent any unauthorized data access
     match /{document=**} {
       allow read, write: if false;

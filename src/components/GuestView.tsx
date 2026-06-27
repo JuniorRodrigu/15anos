@@ -21,8 +21,8 @@ import {
   PartyPopper,
   Info
 } from 'lucide-react';
-import { Gift, Contribution, AppSettings } from '../types';
-import { addContribution } from '../lib/firebase';
+import { Gift, Contribution, AppSettings, GuestConfirmation } from '../types';
+import { addContribution, addConfirmation } from '../lib/firebase';
 
 interface GuestViewProps {
   settings: AppSettings;
@@ -33,6 +33,7 @@ interface GuestViewProps {
 
 export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: GuestViewProps) {
   const theme = settings.theme || 'navy';
+  const birthdayGirlName = settings.birthdayGirl === 'Lorena Silva' || settings.birthdayGirl === 'Lorena' ? 'Lara Giovana' : settings.birthdayGirl;
 
   const [isSystemDark, setIsSystemDark] = useState(false);
 
@@ -220,6 +221,14 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
   const [isCopying, setIsCopying] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Attendance confirmation modal states
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [confirmName, setConfirmName] = useState('');
+  const [confirmPhone, setConfirmPhone] = useState('');
+  const [confirmCompanionCount, setConfirmCompanionCount] = useState(0);
+  const [confirmCompanionNames, setConfirmCompanionNames] = useState('');
+  const [isConfirmSubmitting, setIsConfirmSubmitting] = useState(false);
+
   // Sync body background styles
   useEffect(() => {
     const bgStyle = activeTheme.bodyBgStyle;
@@ -350,6 +359,59 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
     return `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(text)}`;
   };
 
+  const handleConfirmPresenceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!confirmName.trim()) return;
+    setIsConfirmSubmitting(true);
+
+    let text = `Olá! Confirmei minha presença na festa de 15 anos da ${birthdayGirlName}! ✨\n\n`;
+    text += `👤 *Nome:* ${confirmName}\n`;
+    if (confirmCompanionCount > 0) {
+      text += `👥 *Acompanhantes:* ${confirmCompanionCount} (${confirmCompanionNames})\n`;
+    } else {
+      text += `👥 *Acompanhantes:* Nenhum\n`;
+    }
+    text += `\nFico muito feliz em participar desse momento especial! 💖`;
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${settings.whatsappPhone || '5587988024652'}&text=${encodeURIComponent(text)}`;
+
+    // Tenta abrir o WhatsApp imediatamente para evitar bloqueio de popup pelo navegador (sincronamente com o clique)
+    let wpWindow: Window | null = null;
+    try {
+      wpWindow = window.open(whatsappUrl, '_blank');
+    } catch (e) {
+      console.warn("Navegador bloqueou a abertura direta do WhatsApp:", e);
+    }
+
+    try {
+      await addConfirmation({
+        guestName: confirmName,
+        guestPhone: confirmPhone,
+        companionCount: confirmCompanionCount,
+        companionNames: confirmCompanionCount > 0 ? confirmCompanionNames : ''
+      });
+      await onRefresh();
+      
+      // Limpa os campos
+      setConfirmName('');
+      setConfirmPhone('');
+      setConfirmCompanionCount(0);
+      setConfirmCompanionNames('');
+      setIsConfirmModalOpen(false);
+
+      // Se não conseguiu abrir em nova aba antes, redireciona agora como fallback
+      if (!wpWindow) {
+        window.location.href = whatsappUrl;
+      }
+    } catch (err) {
+      console.error("Error creating confirmation:", err);
+      alert("Houve um erro ao registrar sua confirmação de presença no sistema, mas você pode confirmar diretamente pelo WhatsApp!");
+      window.location.href = whatsappUrl;
+    } finally {
+      setIsConfirmSubmitting(false);
+    }
+  };
+
   // Pre-formatted Date String
   const partyDateFormatted = new Date(settings.birthdayDate).toLocaleDateString('pt-BR', {
     day: '2-digit',
@@ -384,7 +446,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
         <div className="flex items-center gap-2">
           <Heart size={16} className={`${activeTheme.primaryClass} fill-current/40 animate-pulse`} />
           <span className={`font-serif font-extrabold text-sm md:text-base ${activeTheme.primaryClass} tracking-widest uppercase`}>
-            {settings.birthdayGirl} • 15 Anos
+            {birthdayGirlName} • 15 Anos
           </span>
         </div>
         
@@ -409,19 +471,15 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
             Presentes
           </button>
 
-          <a
-            href={`https://api.whatsapp.com/send?phone=${settings.whatsappPhone || '5587988024652'}&text=${encodeURIComponent(
-              `Olá! Gostaria de confirmar minha presença na festa de 15 anos da ${settings.birthdayGirl}! ✨`
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setIsConfirmModalOpen(true)}
             className={`px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 hover:bg-black/5 active:scale-95 ${
               theme === 'lavender' ? 'text-purple-200 hover:text-white' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Heart size={12} className="fill-current/10" />
             Presença
-          </a>
+          </button>
 
           {settings.location && (
             <a
@@ -532,7 +590,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
           <div className="w-full text-center mt-14 md:mt-16 flex flex-col items-center z-10">
             {/* The calligraphic cursive birthday girl's name */}
             <h1 className={`font-cursive text-6xl md:text-8xl ${activeTheme.primaryClass} leading-none tracking-wide py-1 drop-shadow-xs select-none`}>
-              {settings.birthdayGirl}
+              {birthdayGirlName}
             </h1>
 
             {/* "15 anos" elegantly written under */}
@@ -641,13 +699,9 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
               </button>
 
               {/* Button 2: Confirmar Presença */}
-              <a
-                href={`https://api.whatsapp.com/send?phone=${settings.whatsappPhone || '5587988024652'}&text=${encodeURIComponent(
-                  `Olá! Gostaria de confirmar minha presença na festa de 15 anos da ${settings.birthdayGirl}! ✨`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center gap-2 group cursor-pointer"
+              <button
+                onClick={() => setIsConfirmModalOpen(true)}
+                className="flex flex-col items-center gap-2 group cursor-pointer focus:outline-none"
               >
                 <div className={`w-14 h-14 rounded-full ${activeTheme.primaryBgClass} ${activeTheme.primaryHoverBgClass} text-white flex items-center justify-center shadow-md transition-all group-hover:scale-105 active:scale-95`}>
                   <Heart size={20} className="fill-white/10" />
@@ -655,7 +709,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
                 <span className={`text-[9px] uppercase font-bold ${activeTheme.primaryClass} tracking-wider text-center max-w-[80px] leading-tight font-sans`}>
                   Confirmar Presença
                 </span>
-              </a>
+              </button>
 
               {/* Button 3: Endereço no Mapa */}
               <a
@@ -864,7 +918,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
                       {isCompleted ? (
                         <div className="w-full text-center py-3 bg-emerald-50/10 text-emerald-400 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-emerald-500/20">
                           <CheckCircle size={15} className="text-emerald-500" />
-                          {settings.birthdayGirl} agradece muito!
+                          {birthdayGirlName} agradece muito!
                         </div>
                       ) : (
                         <button
@@ -888,7 +942,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
 
       {/* Footer message */}
       <footer className="w-full max-w-7xl mx-auto px-4 md:px-8 text-center mt-12 pt-8 border-t border-slate-200/60 text-slate-400 text-xs">
-        <p>Criado com amor para celebrar a mágica transição dos 15 anos de {settings.birthdayGirl}.</p>
+        <p>Criado com amor para celebrar a mágica transição dos 15 anos de {birthdayGirlName}.</p>
         <p className="mt-1">© 2026 Todos os direitos reservados.</p>
       </footer>
 
@@ -917,7 +971,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
                     Presentear com: <br/>
                     <span className={`${activeTheme.primaryClass} italic font-medium`}>{selectedGift.name}</span>
                   </h3>
-                  <p className={`text-xs ${activeTheme.textMuted} mt-1`}>Preencha seus dados para que a {settings.birthdayGirl} saiba quem enviou o presente com carinho!</p>
+                  <p className={`text-xs ${activeTheme.textMuted} mt-1`}>Preencha seus dados para que a {birthdayGirlName} saiba quem enviou o presente com carinho!</p>
                 </div>
 
                 <form onSubmit={handleNextToPix} className="space-y-4">
@@ -1197,6 +1251,135 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
 
               </div>
             )}
+
+          </div>
+        </div>
+      )}
+
+      {/* ATTENDANCE CONFIRMATION MODAL */}
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop blur effect */}
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity duration-300 animate-fade-in"
+            onClick={() => setIsConfirmModalOpen(false)}
+          />
+          
+          {/* Modal Container */}
+          <div className={`relative w-full max-w-lg ${activeTheme.cardBgClass} border ${activeTheme.cardBorderClass} rounded-3xl p-6 md:p-8 shadow-2xl z-10 overflow-hidden max-h-[90vh] overflow-y-auto animate-scale-up font-sans text-left`}>
+            
+            {/* Header layout */}
+            <div className="flex justify-between items-start pb-4 border-b border-white/40">
+              <div className="space-y-1">
+                <span className={`text-[9px] uppercase font-extrabold tracking-widest ${activeTheme.primaryClass} flex items-center gap-1.5`}>
+                  <Heart size={10} className="fill-current animate-pulse" /> Confirmar Presença
+                </span>
+                <h3 className={`text-xl font-serif font-bold ${activeTheme.textMain}`}>Você vai comparecer?</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsConfirmModalOpen(false)}
+                className="p-1.5 rounded-xl bg-white/40 border border-white/50 hover:bg-white/80 transition-all text-slate-400 hover:text-slate-800 cursor-pointer"
+                id="btn-close-confirm-modal"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleConfirmPresenceSubmit} className="space-y-5 pt-5">
+              
+              {/* Name field */}
+              <div className="space-y-1.5">
+                <label htmlFor="confirm-guest-name" className={`text-[10px] font-extrabold uppercase tracking-wider ${activeTheme.primaryClass} flex items-center gap-1`}>
+                  <User size={12} /> Seu Nome Completo *
+                </label>
+                <input
+                  type="text"
+                  id="confirm-guest-name"
+                  value={confirmName}
+                  onChange={(e) => setConfirmName(e.target.value)}
+                  placeholder="Ex: João da Silva"
+                  required
+                  className="w-full px-4 py-3 rounded-xl glass-input focus:outline-none text-sm font-sans text-gray-800 bg-white/30 border border-white/40"
+                />
+              </div>
+
+              {/* Companion Count Section */}
+              <div className="space-y-3 p-4 rounded-2xl bg-white/30 border border-white/40">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-800">Levará acompanhantes?</h4>
+                    <p className="text-[10px] text-gray-400 leading-tight">Adicione apenas familiares ou pessoas próximas.</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmCompanionCount(Math.max(0, confirmCompanionCount - 1))}
+                      className="w-8 h-8 rounded-full bg-white/80 hover:bg-white border border-slate-200 text-slate-600 font-bold flex items-center justify-center transition-all cursor-pointer text-sm"
+                    >
+                      -
+                    </button>
+                    <span className="w-6 text-center text-sm font-bold text-gray-800 font-sans">
+                      {confirmCompanionCount}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmCompanionCount(confirmCompanionCount + 1)}
+                      className="w-8 h-8 rounded-full bg-white/80 hover:bg-white border border-slate-200 text-slate-600 font-bold flex items-center justify-center transition-all cursor-pointer text-sm"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {confirmCompanionCount > 0 && (
+                  <div className="space-y-1.5 pt-2 animate-fade-in">
+                    <label htmlFor="confirm-companion-names" className={`text-[10px] font-extrabold uppercase tracking-wider ${activeTheme.primaryClass}`}>
+                      Nomes dos Acompanhantes
+                    </label>
+                    <textarea
+                      id="confirm-companion-names"
+                      value={confirmCompanionNames}
+                      onChange={(e) => setConfirmCompanionNames(e.target.value)}
+                      placeholder="Ex: Maria Souza, Lucas Silva"
+                      rows={2}
+                      className="w-full px-4 py-3 rounded-xl glass-input focus:outline-none text-xs font-sans resize-none text-gray-800 bg-white/30 border border-white/40"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-4 space-y-2">
+                <button
+                  type="submit"
+                  disabled={isConfirmSubmitting || !confirmName.trim()}
+                  className="w-full bg-gradient-to-r from-pink-500 via-[#25D366] to-emerald-600 hover:from-pink-600 hover:via-[#20ba5a] hover:to-emerald-700 text-white font-extrabold text-xs py-4 px-6 rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 cursor-pointer uppercase tracking-wider border-b-4 border-emerald-700 scale-100 hover:scale-[1.01] active:scale-[0.99]"
+                >
+                  {isConfirmSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Salvando e redirecionando...
+                    </span>
+                  ) : (
+                    <>
+                      <MessageCircle size={18} className="fill-white/10" />
+                      <span>Confirmar Presença & WhatsApp</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsConfirmModalOpen(false)}
+                  className="w-full text-center text-slate-400 hover:text-slate-600 py-2 rounded-lg text-[10px] font-bold transition-all uppercase cursor-pointer tracking-wider"
+                >
+                  Cancelar
+                </button>
+              </div>
+
+            </form>
 
           </div>
         </div>

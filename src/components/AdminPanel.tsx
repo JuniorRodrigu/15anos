@@ -21,15 +21,18 @@ import {
   ExternalLink,
   MessageSquare,
   AlertTriangle,
-  Phone
+  Phone,
+  Users,
+  ClipboardCheck
 } from 'lucide-react';
-import { Gift, Contribution, AppSettings } from '../types';
-import { addGift, updateGift, deleteGift, updateAppSettings, updateContributionStatus } from '../lib/firebase';
+import { Gift, Contribution, AppSettings, GuestConfirmation } from '../types';
+import { addGift, updateGift, deleteGift, updateAppSettings, updateContributionStatus, deleteConfirmation } from '../lib/firebase';
 
 interface AdminPanelProps {
   settings: AppSettings;
   gifts: Gift[];
   contributions: Contribution[];
+  confirmations: GuestConfirmation[];
   onRefresh: () => Promise<void>;
   onClose: () => void;
 }
@@ -50,12 +53,12 @@ const IMAGE_PRESETS = [
   { name: 'Celular Novo', url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80' }
 ];
 
-export default function AdminPanel({ settings, gifts, contributions, onRefresh, onClose }: AdminPanelProps) {
+export default function AdminPanel({ settings, gifts, contributions, confirmations, onRefresh, onClose }: AdminPanelProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   
-  const [activeTab, setActiveTab] = useState<'gifts' | 'contributions' | 'settings'>('gifts');
+  const [activeTab, setActiveTab] = useState<'gifts' | 'contributions' | 'confirmations' | 'settings'>('gifts');
   const [isSeeding, setIsSeeding] = useState(false);
 
   // Custom Confirmation Dialog States
@@ -692,10 +695,10 @@ export default function AdminPanel({ settings, gifts, contributions, onRefresh, 
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex bg-white/40 p-1 rounded-xl border border-white/50 backdrop-blur-xs">
+        <div className="flex bg-white/40 p-1 rounded-xl border border-white/50 backdrop-blur-xs flex-wrap gap-1">
           <button
             onClick={() => setActiveTab('gifts')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase cursor-pointer ${
               activeTab === 'gifts'
                 ? 'bg-white/80 text-pink-600 border border-white/60 shadow-xs'
                 : 'text-gray-500 hover:text-gray-800'
@@ -703,19 +706,19 @@ export default function AdminPanel({ settings, gifts, contributions, onRefresh, 
             id="tab-gifts"
           >
             <Layers size={14} />
-            Presentes
+            Lista de Presentes
           </button>
           <button
             onClick={() => setActiveTab('contributions')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase relative cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase relative cursor-pointer ${
               activeTab === 'contributions'
                 ? 'bg-white/80 text-pink-600 border border-white/60 shadow-xs'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
             id="tab-contributions"
           >
-            <Heart size={14} />
-            Confirmações
+            <GiftIcon size={14} />
+            Presentes Recebidos
             {contributions.filter(c => c.status === 'pending').length > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full animate-bounce">
                 {contributions.filter(c => c.status === 'pending').length}
@@ -723,8 +726,25 @@ export default function AdminPanel({ settings, gifts, contributions, onRefresh, 
             )}
           </button>
           <button
+            onClick={() => setActiveTab('confirmations')}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase cursor-pointer ${
+              activeTab === 'confirmations'
+                ? 'bg-white/80 text-pink-600 border border-white/60 shadow-xs'
+                : 'text-gray-500 hover:text-gray-800'
+            }`}
+            id="tab-confirmations"
+          >
+            <ClipboardCheck size={14} />
+            Presenças Confirmadas
+            {confirmations.length > 0 && (
+              <span className="bg-pink-100 text-pink-600 text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                {confirmations.length}
+              </span>
+            )}
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase cursor-pointer ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all uppercase cursor-pointer ${
               activeTab === 'settings'
                 ? 'bg-white/80 text-pink-600 border border-white/60 shadow-xs'
                 : 'text-gray-500 hover:text-gray-800'
@@ -1019,6 +1039,120 @@ export default function AdminPanel({ settings, gifts, contributions, onRefresh, 
                             Alterar Status
                           </button>
                         )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* CONFIRMATIONS TAB */}
+        {activeTab === 'confirmations' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-serif font-bold text-gray-800">Presenças Confirmadas</h2>
+                <p className="text-xs text-gray-400 mt-1">Veja a lista de convidados que confirmaram presença no evento pelo site.</p>
+              </div>
+              
+              <div className="bg-white/60 backdrop-blur-xs px-4 py-2.5 rounded-xl border border-white/50 shadow-xs flex items-center gap-3 self-start md:self-auto">
+                <Users size={16} className="text-pink-500" />
+                <div>
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Total de Convidados</div>
+                  <div className="text-base font-serif font-bold text-gray-800 leading-tight">
+                    {confirmations.reduce((acc, c) => acc + 1 + (c.companionCount || 0), 0)} pessoas
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {confirmations.length === 0 ? (
+              <div className="glass-card rounded-3xl p-12 text-center shadow-sm">
+                <div className="p-4 bg-white/50 text-pink-600 rounded-full inline-flex mb-4 border border-white/40">
+                  <ClipboardCheck size={36} />
+                </div>
+                <h3 className="text-lg font-serif font-bold text-gray-800">Nenhuma presença confirmada ainda</h3>
+                <p className="text-xs text-gray-400 max-w-md mx-auto mt-2">
+                  Quando seus convidados preencherem a confirmação de presença no site, eles aparecerão aqui nesta lista em tempo real.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {confirmations.map((conf) => {
+                  const dateStr = new Date(conf.createdAt).toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  });
+
+                  return (
+                    <div 
+                      key={conf.id} 
+                      className="glass-card rounded-2xl p-5 md:p-6 transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-5 shadow-sm border border-white/40 bg-white/40 hover:bg-white/60"
+                      id={`conf-card-${conf.id}`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 rounded-full bg-pink-100 text-pink-600 border border-pink-200/50 flex-shrink-0">
+                          <User size={18} />
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-semibold text-gray-800 font-sans flex items-center gap-2 flex-wrap">
+                            {conf.guestName}
+                            {conf.companionCount > 0 && (
+                              <span className="bg-pink-100 text-pink-600 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                                +{conf.companionCount} {conf.companionCount === 1 ? 'acompanhante' : 'acompanhantes'}
+                              </span>
+                            )}
+                          </h4>
+                          
+                          <div className="flex items-center gap-4 text-xs text-gray-500 font-sans flex-wrap">
+                            <span className="flex items-center gap-1">
+                              <Calendar size={12} />
+                              Confirmado em: {dateStr}
+                            </span>
+                            {conf.guestPhone && (
+                              <a 
+                                href={`https://api.whatsapp.com/send?phone=${conf.guestPhone.replace(/\D/g, '')}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="flex items-center gap-1 text-pink-600 hover:text-pink-700 font-medium hover:underline cursor-pointer"
+                              >
+                                <Phone size={12} />
+                                {conf.guestPhone}
+                              </a>
+                            )}
+                          </div>
+
+                          {conf.companionCount > 0 && conf.companionNames && (
+                            <div className="bg-white/40 rounded-lg p-2.5 mt-2 border border-white/40 text-[11px] text-gray-600 leading-relaxed font-sans max-w-xl">
+                              <span className="font-semibold text-pink-600">Acompanhantes: </span>
+                              {conf.companionNames}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 self-end md:self-auto">
+                        <button
+                          onClick={async () => {
+                            if (window.confirm(`Tem certeza que deseja excluir a confirmação de ${conf.guestName}?`)) {
+                              try {
+                                await deleteConfirmation(conf.id);
+                                await onRefresh();
+                              } catch (err) {
+                                console.error("Error deleting confirmation:", err);
+                              }
+                            }
+                          }}
+                          className="w-full md:w-auto text-center text-rose-500 hover:text-white hover:bg-rose-500 text-[10px] font-bold px-3 py-2 rounded-lg border border-rose-200 transition-all uppercase tracking-wider cursor-pointer"
+                          id={`btn-delete-conf-${conf.id}`}
+                        >
+                          Remover
+                        </button>
                       </div>
                     </div>
                   );

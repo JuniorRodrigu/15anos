@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, Heart } from 'lucide-react';
-import { Gift, Contribution, AppSettings } from './types';
-import { getAppSettings, getGifts, getContributions } from './lib/firebase';
+import { Gift, Contribution, AppSettings, GuestConfirmation } from './types';
+import { getAppSettings, getGifts, getContributions, getConfirmations } from './lib/firebase';
 import GuestView from './components/GuestView';
 import AdminPanel from './components/AdminPanel';
 
@@ -9,6 +9,7 @@ export default function App() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [gifts, setGifts] = useState<Gift[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [confirmations, setConfirmations] = useState<GuestConfirmation[]>([]);
   
   const checkIsAdminRoute = () => {
     const path = window.location.pathname;
@@ -41,20 +42,22 @@ export default function App() {
       const fetchedSettings = await getAppSettings();
       const fetchedGifts = await getGifts();
       const fetchedContributions = await getContributions();
+      const fetchedConfirmations = await getConfirmations();
       
       setSettings(fetchedSettings);
       setGifts(fetchedGifts);
       setContributions(fetchedContributions);
+      setConfirmations(fetchedConfirmations);
     } catch (err) {
       console.error("Error fetching Firestore data:", err);
       // Fallback to defaults if Firestore is not reachable or hasn't finished provisioning
       const defaultSettings: AppSettings = {
-        birthdayGirl: 'Lorena Silva',
+        birthdayGirl: 'Lara Giovana',
         birthdayDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         welcomeMessage: 'Bem-vindo ao meu site de 15 anos! Fico muito feliz em ter você aqui para comemorar esse momento tão especial comigo. Se quiser me presentear, escolha uma das cotas abaixo. Cada detalhe foi pensado com muito carinho!',
-        pixKey: 'lorena15anos@exemplo.com',
+        pixKey: 'juniorrodrigues1717@gmail.com',
         pixType: 'E-mail',
-        pixName: 'Lorena Silva Santos',
+        pixName: 'Lara Giovana Silva',
         pixQrCodeUrl: '',
         adminPin: '15anos',
         featuredImageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1200&auto=format&fit=crop&q=80',
@@ -65,7 +68,7 @@ export default function App() {
         {
           id: 'default-1',
           name: 'Vestido da Valsa Principal',
-          description: 'Ajude a Lorena a brilhar na valsa de 15 anos com um lindo vestido digno de princesa!',
+          description: 'Ajude a Lara Giovana a brilhar na valsa de 15 anos com um lindo vestido digno de princesa!',
           quotaValue: 100,
           totalQuotas: 10,
           takenQuotas: 0,
@@ -99,6 +102,7 @@ export default function App() {
       setSettings(defaultSettings);
       setGifts(defaultGifts);
       setContributions([]);
+      setConfirmations([]);
     } finally {
       setLoading(false);
     }
@@ -143,6 +147,7 @@ export default function App() {
           settings={settings}
           gifts={gifts}
           contributions={contributions}
+          confirmations={confirmations}
           onRefresh={fetchData}
           onClose={() => {
             setIsAdmin(false);
