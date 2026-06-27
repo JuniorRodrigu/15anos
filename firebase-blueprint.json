@@ -1,0 +1,68 @@
+{
+  "entities": {
+    "Setting": {
+      "title": "Setting",
+      "description": "Application settings for the 15th birthday party",
+      "type": "object",
+      "properties": {
+        "birthdayGirl": { "type": "string", "description": "Name of the birthday girl" },
+        "birthdayDate": { "type": "string", "description": "Date of the party in YYYY-MM-DD format" },
+        "welcomeMessage": { "type": "string", "description": "Welcome message displayed on the home page" },
+        "pixKey": { "type": "string", "description": "PIX key for receiving contributions" },
+        "pixType": { "type": "string", "description": "Type of PIX key (CPF, CNPJ, Email, Phone, Random)" },
+        "pixName": { "type": "string", "description": "Full name of the PIX account owner" },
+        "pixQrCodeUrl": { "type": "string", "description": "Data URL or HTTP URL of the PIX QR Code image" },
+        "adminPin": { "type": "string", "description": "Secure PIN for accessing admin area" },
+        "featuredImageUrl": { "type": "string", "description": "Hero banner image URL" }
+      },
+      "required": ["birthdayGirl", "birthdayDate", "welcomeMessage", "pixKey", "pixType", "pixName", "adminPin"]
+    },
+    "Gift": {
+      "title": "Gift",
+      "description": "A gift item available for contribution",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the gift" },
+        "name": { "type": "string", "description": "Name of the gift" },
+        "description": { "type": "string", "description": "Description of the gift" },
+        "quotaValue": { "type": "number", "description": "Value per quota" },
+        "totalQuotas": { "type": "number", "description": "Total available quotas" },
+        "takenQuotas": { "type": "number", "description": "Number of quotas already fully paid and approved" },
+        "pendingQuotas": { "type": "number", "description": "Number of quotas pending payment" },
+        "imageUrl": { "type": "string", "description": "Image URL of the gift" },
+        "createdAt": { "type": "number", "description": "Creation timestamp" }
+      },
+      "required": ["id", "name", "description", "quotaValue", "totalQuotas", "takenQuotas", "pendingQuotas", "createdAt"]
+    },
+    "Contribution": {
+      "title": "Contribution",
+      "description": "A guest's contribution for a gift",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier of the contribution" },
+        "giftId": { "type": "string", "description": "Associated gift's identifier" },
+        "guestName": { "type": "string", "description": "Name of the guest" },
+        "guestMessage": { "type": "string", "description": "Message to the birthday girl" },
+        "quotasCount": { "type": "number", "description": "Number of quotas selected" },
+        "totalValue": { "type": "number", "description": "Total contribution value (quotasCount * quotaValue)" },
+        "status": { "type": "string", "description": "Status of the contribution ('pending' or 'approved')" },
+        "createdAt": { "type": "number", "description": "Contribution timestamp" }
+      },
+      "required": ["id", "giftId", "guestName", "quotasCount", "totalValue", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "settings/{settingId}": {
+      "schema": "Setting",
+      "description": "Global application settings"
+    },
+    "gifts/{giftId}": {
+      "schema": "Gift",
+      "description": "Available gifts list"
+    },
+    "contributions/{contributionId}": {
+      "schema": "Contribution",
+      "description": "Contributions received from guests"
+    }
+  }
+}

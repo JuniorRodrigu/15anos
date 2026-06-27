@@ -1,0 +1,6 @@
+{
+  "name": "Lista de Presentes de 15 Anos",
+  "description": "Um site completo e elegante para lista de presentes de aniversário de 15 anos, com painel administrativo para controle de cotas, valores e confirmação de pagamentos Pix.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

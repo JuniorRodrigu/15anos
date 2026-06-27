@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Settings Collection: Publicly readable and writable so the client-side Admin Panel (using PIN code) can update configuration
+    match /settings/{settingId} {
+      allow read, write: if true;
+    }
+    
+    // Gifts Collection: Publicly readable so guests can view the list, and writable so gifts can be managed and quotas can be updated
+    match /gifts/{giftId} {
+      allow read, write: if true;
+    }
+    
+    // Contributions Collection: Publicly readable and writable so guests can record their contributions and view/confirm payments
+    match /contributions/{contributionId} {
+      allow read, write: if true;
+    }
+    
+    // Catch-all: Deny all other collections to prevent any unauthorized data access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

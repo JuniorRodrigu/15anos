@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-cursive: "Alex Brush", cursive;
+}
+
+body {
+  background: #FCFAF6;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(27, 54, 93, 0.02) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(27, 54, 93, 0.02) 0%, transparent 40%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.glass-header {
+  background: rgba(252, 250, 246, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(27, 54, 93, 0.08);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(27, 54, 93, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(27, 54, 93, 0.05);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(27, 54, 93, 0.08);
+  box-shadow: 0 4px 16px 0 rgba(27, 54, 93, 0.03);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(27, 54, 93, 0.15);
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(27, 54, 93, 0.5);
+}
+
