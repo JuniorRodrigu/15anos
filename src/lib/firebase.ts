@@ -52,7 +52,7 @@ export async function getAppSettings(): Promise<AppSettings> {
       featuredImageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1200&auto=format&fit=crop&q=80',
       location: 'Rua Rio Tigre, 259 - José e Maria',
       theme: 'navy',
-      whatsappPhone: '5588988231924'
+      whatsappPhone: '5587988024652'
     };
     await setDoc(docRef, defaultSettings);
     return defaultSettings;

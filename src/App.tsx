@@ -59,7 +59,7 @@ export default function App() {
         adminPin: '15anos',
         featuredImageUrl: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1200&auto=format&fit=crop&q=80',
         theme: 'navy',
-        whatsappPhone: '5588988231924'
+        whatsappPhone: '5587988024652'
       };
       const defaultGifts: Gift[] = [
         {

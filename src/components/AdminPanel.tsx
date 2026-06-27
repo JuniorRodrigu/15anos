@@ -204,7 +204,7 @@ export default function AdminPanel({ settings, gifts, contributions, onRefresh, 
   const [settingsPin, setSettingsPin] = useState(settings.adminPin);
   const [settingsFeaturedImg, setSettingsFeaturedImg] = useState(settings.featuredImageUrl || '');
   const [settingsTheme, setSettingsTheme] = useState<'navy' | 'rose' | 'lavender'>(settings.theme || 'navy');
-  const [settingsWhatsappPhone, setSettingsWhatsappPhone] = useState(settings.whatsappPhone || '5588988231924');
+  const [settingsWhatsappPhone, setSettingsWhatsappPhone] = useState(settings.whatsappPhone || '5587988024652');
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsFeedback, setSettingsFeedback] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -221,7 +221,7 @@ export default function AdminPanel({ settings, gifts, contributions, onRefresh, 
     setSettingsPin(settings.adminPin);
     setSettingsFeaturedImg(settings.featuredImageUrl || '');
     setSettingsTheme(settings.theme || 'navy');
-    setSettingsWhatsappPhone(settings.whatsappPhone || '5588988231924');
+    setSettingsWhatsappPhone(settings.whatsappPhone || '5587988024652');
   }, [settings]);
 
   // Image upload state for Pix QR Code
@@ -1089,12 +1089,12 @@ export default function AdminPanel({ settings, gifts, contributions, onRefresh, 
                     type="text"
                     value={settingsWhatsappPhone}
                     onChange={(e) => setSettingsWhatsappPhone(e.target.value)}
-                    placeholder="Ex: 5588988231924"
+                    placeholder="Ex: 5587988024652"
                     className="w-full px-4 py-2.5 rounded-xl glass-input focus:outline-none text-sm font-sans"
                     required
                     id="setting-whatsapp-phone"
                   />
-                  <p className="text-[10px] text-gray-400 leading-relaxed">Número para receber as mensagens de confirmação de presença e os comprovantes de Pix dos convidados. Coloque o código do país e DDD (Ex: 5588988231924).</p>
+                  <p className="text-[10px] text-gray-400 leading-relaxed">Número para receber as mensagens de confirmação de presença e os comprovantes de Pix dos convidados. Coloque o código do país e DDD (Ex: 5587988024652).</p>
                 </div>
 
                 <div className="space-y-1">

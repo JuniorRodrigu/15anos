@@ -51,3 +51,103 @@ body {
   border-color: rgba(27, 54, 93, 0.5);
 }
 
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #090D16 !important;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 45%),
+      radial-gradient(circle at 90% 80%, rgba(29, 78, 216, 0.08) 0%, transparent 45%) !important;
+    color: #f1f5f9 !important;
+  }
+
+  .glass-header {
+    background: rgba(9, 13, 22, 0.8) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .glass-panel {
+    background: rgba(17, 24, 39, 0.75) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .glass-card {
+    background: rgba(31, 41, 55, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2) !important;
+  }
+
+  .glass-input {
+    background: rgba(17, 24, 39, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #f1f5f9 !important;
+  }
+
+  .glass-input:focus {
+    background: rgba(17, 24, 39, 0.98) !important;
+    border-color: rgba(96, 165, 250, 0.5) !important;
+  }
+
+  /* Invert tailwind colors where light background is used */
+  .bg-white {
+    background-color: #111827 !important;
+  }
+  .bg-white\/80 {
+    background-color: rgba(17, 24, 39, 0.8) !important;
+  }
+  .bg-white\/40 {
+    background-color: rgba(17, 24, 39, 0.4) !important;
+  }
+  .bg-[#FCFAF6] {
+    background-color: #090D16 !important;
+  }
+  .bg-[#FAF8F3] {
+    background-color: #111827 !important;
+  }
+  .bg-[#FFFDFE] {
+    background-color: #1a090c !important;
+  }
+  .bg-[#FFF5F6] {
+    background-color: #0f0507 !important;
+  }
+
+  /* Overwrite hardcoded light mode text color classes to be readable in dark mode */
+  .text-slate-900, .text-gray-900, .text-neutral-900 {
+    color: #f8fafc !important;
+  }
+  .text-slate-800, .text-gray-800, .text-neutral-800 {
+    color: #f1f5f9 !important;
+  }
+  .text-slate-700, .text-gray-700, .text-neutral-700 {
+    color: #e2e8f0 !important;
+  }
+  .text-slate-600, .text-gray-600, .text-neutral-600 {
+    color: #cbd5e1 !important;
+  }
+  .text-slate-500, .text-gray-500, .text-neutral-500 {
+    color: #94a3b8 !important;
+  }
+  .text-slate-400, .text-gray-400, .text-neutral-400 {
+    color: #94a3b8 !important;
+  }
+  
+  /* Modal backdrop adaptation */
+  .bg-black\/60 {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+  }
+
+  /* Admin buttons / inputs */
+  .border-slate-200, .border-rose-200 {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+  .border-slate-100 {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  /* Admin modals and popups */
+  .bg-white.rounded-3xl {
+    background-color: #111827 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+}
+

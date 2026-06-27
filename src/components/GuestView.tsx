@@ -34,6 +34,17 @@ interface GuestViewProps {
 export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: GuestViewProps) {
   const theme = settings.theme || 'navy';
 
+  const [isSystemDark, setIsSystemDark] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setIsSystemDark(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => setIsSystemDark(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
   const themeConfigs = {
     navy: {
       primaryColor: '#1B365D',
@@ -59,7 +70,8 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
       successBadgeClass: 'bg-[#1B365D]/10 text-[#1B365D] border-[#1B365D]/20',
       textMain: 'text-slate-800',
       textMuted: 'text-slate-500',
-      inputBgClass: 'bg-white border-slate-200'
+      inputBgClass: 'bg-white border-slate-200',
+      dateBoxBgClass: 'bg-white/50'
     },
     rose: {
       primaryColor: '#F43F5E',
@@ -85,7 +97,8 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
       successBadgeClass: 'bg-rose-50 text-rose-600 border-rose-100',
       textMain: 'text-slate-800',
       textMuted: 'text-slate-500',
-      inputBgClass: 'bg-white border-rose-200'
+      inputBgClass: 'bg-white border-rose-200',
+      dateBoxBgClass: 'bg-white/50'
     },
     lavender: {
       primaryColor: '#A78BFA',
@@ -111,11 +124,80 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
       successBadgeClass: 'bg-purple-950/60 text-[#D8B4FE] border-purple-800/30',
       textMain: 'text-purple-50',
       textMuted: 'text-purple-300/70',
-      inputBgClass: 'bg-[#1F143A] border-purple-900/50 text-purple-50'
+      inputBgClass: 'bg-[#1F143A] border-purple-900/50 text-purple-50',
+      dateBoxBgClass: 'bg-purple-950/30'
     }
   };
 
-  const activeTheme = themeConfigs[theme] || themeConfigs.navy;
+  const activeTheme = React.useMemo(() => {
+    const currentTheme = settings.theme || 'navy';
+    
+    if (currentTheme === 'lavender') {
+      return themeConfigs.lavender;
+    }
+    
+    if (isSystemDark) {
+      if (currentTheme === 'navy') {
+        return {
+          ...themeConfigs.navy,
+          primaryClass: 'text-blue-400',
+          primaryBgClass: 'bg-blue-600',
+          primaryHoverBgClass: 'hover:bg-blue-700',
+          primaryBorderClass: 'border-blue-500',
+          primaryBorderMutedClass: 'border-blue-500/30',
+          primaryBorderLightClass: 'border-blue-500/20',
+          primaryTextMutedClass: 'text-blue-300/40',
+          primaryTextSemiMutedClass: 'text-blue-200',
+          primaryBgLightClass: 'bg-blue-950/40',
+          primaryBgLightBorderClass: 'border-blue-900/40',
+          bodyBgStyle: {
+            backgroundColor: '#090D16',
+            backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 45%), radial-gradient(circle at 90% 80%, rgba(29, 78, 216, 0.08) 0%, transparent 45%)'
+          },
+          cardBgClass: 'bg-[#111827]',
+          cardBorderClass: 'border-slate-800',
+          sparkleClass: 'text-blue-400',
+          buttonBgGradient: 'bg-gradient-to-r from-blue-600 to-indigo-500',
+          shadowColor: 'rgba(0, 0, 0, 0.5)',
+          successBadgeClass: 'bg-blue-950/60 text-blue-200 border-blue-900/30',
+          textMain: 'text-slate-100',
+          textMuted: 'text-slate-400',
+          inputBgClass: 'bg-[#1F2937] border-slate-700 text-slate-100',
+          dateBoxBgClass: 'bg-[#090D16]/50'
+        };
+      } else if (currentTheme === 'rose') {
+        return {
+          ...themeConfigs.rose,
+          primaryClass: 'text-rose-400',
+          primaryBgClass: 'bg-rose-500',
+          primaryHoverBgClass: 'hover:bg-rose-600',
+          primaryBorderClass: 'border-rose-500',
+          primaryBorderMutedClass: 'border-rose-500/30',
+          primaryBorderLightClass: 'border-rose-500/20',
+          primaryTextMutedClass: 'text-rose-300/40',
+          primaryTextSemiMutedClass: 'text-rose-200',
+          primaryBgLightClass: 'bg-rose-950/40',
+          primaryBgLightBorderClass: 'border-rose-900/40',
+          bodyBgStyle: {
+            backgroundColor: '#0F0507',
+            backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(244, 63, 94, 0.12) 0%, transparent 45%), radial-gradient(circle at 90% 80%, rgba(219, 39, 119, 0.08) 0%, transparent 45%)'
+          },
+          cardBgClass: 'bg-[#1A090C]',
+          cardBorderClass: 'border-rose-950/40',
+          sparkleClass: 'text-rose-300',
+          buttonBgGradient: 'bg-gradient-to-r from-rose-500 to-pink-600',
+          shadowColor: 'rgba(0, 0, 0, 0.5)',
+          successBadgeClass: 'bg-rose-950/60 text-rose-200 border-rose-900/30',
+          textMain: 'text-rose-100',
+          textMuted: 'text-rose-300/60',
+          inputBgClass: 'bg-[#240F12] border-rose-900/40 text-rose-100',
+          dateBoxBgClass: 'bg-[#0F0507]/50'
+        };
+      }
+    }
+    
+    return themeConfigs[currentTheme] || themeConfigs.navy;
+  }, [settings.theme, isSystemDark]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState<'all' | 'available' | 'completed'>('all');
@@ -256,7 +338,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
 
   const getWhatsappUrl = () => {
     if (!selectedGift) return '';
-    const phoneNumber = settings.whatsappPhone || '5588988231924';
+    const phoneNumber = settings.whatsappPhone || '5587988024652';
     const totalValue = selectedGift.quotaValue * selectedQuotas;
     const text = `Olá! Acabei de presentear com mimos virtuais de 15 anos!\n\n` +
       `🎁 *Presente:* ${selectedGift.name}\n` +
@@ -328,7 +410,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
           </button>
 
           <a
-            href={`https://api.whatsapp.com/send?phone=${settings.whatsappPhone || '5588988231924'}&text=${encodeURIComponent(
+            href={`https://api.whatsapp.com/send?phone=${settings.whatsappPhone || '5587988024652'}&text=${encodeURIComponent(
               `Olá! Gostaria de confirmar minha presença na festa de 15 anos da ${settings.birthdayGirl}! ✨`
             )}`}
             target="_blank"
@@ -469,7 +551,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
 
             {/* Beautiful horizontal framed date box from the invitation */}
             <div className="w-full max-w-xl px-4 mt-8">
-              <div className={`border ${activeTheme.primaryBorderMutedClass} rounded-xs p-1 bg-white/50 backdrop-blur-xs`}>
+              <div className={`border ${activeTheme.primaryBorderMutedClass} rounded-xs p-1 ${activeTheme.dateBoxBgClass || 'bg-white/50'} backdrop-blur-xs`}>
                 <div className={`border ${activeTheme.primaryBorderClass} flex justify-between items-center py-4 px-3 md:px-8 ${activeTheme.primaryClass}`}>
                   
                   {/* Weekday & Time column */}
@@ -560,7 +642,7 @@ export default function GuestView({ settings, gifts, onOpenAdmin, onRefresh }: G
 
               {/* Button 2: Confirmar Presença */}
               <a
-                href={`https://api.whatsapp.com/send?phone=${settings.whatsappPhone || '5588988231924'}&text=${encodeURIComponent(
+                href={`https://api.whatsapp.com/send?phone=${settings.whatsappPhone || '5587988024652'}&text=${encodeURIComponent(
                   `Olá! Gostaria de confirmar minha presença na festa de 15 anos da ${settings.birthdayGirl}! ✨`
                 )}`}
                 target="_blank"
